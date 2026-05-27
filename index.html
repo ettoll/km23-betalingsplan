@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KM23 betalingsplan</title>
+  <style>
+    :root{
+      --bg:#fff7fb;--bg2:#fff1f2;--card:#fff;--ink:#34142b;--muted:#8a5a74;--line:#f5cfe0;
+      --accent:#ec4899;--accent-2:#fb7185;--accent-3:#a855f7;--good:#16a34a;--good-soft:#dcfce7;
+      --warn:#f59e0b;--warn-soft:#fff7ed;--shadow:0 8px 24px rgba(236,72,153,.10);
+    }
+    *{box-sizing:border-box}
+    body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:linear-gradient(135deg,var(--bg),var(--bg2));color:var(--ink);margin:0;padding:24px}
+    h1{margin:0 0 8px;font-size:32px;background:linear-gradient(90deg,var(--accent),var(--accent-3));-webkit-background-clip:text;color:transparent}
+    h2{margin:0 0 10px;font-size:22px}h3{margin:0 0 4px;font-size:16px}
+    .sub{color:var(--muted);margin-bottom:20px;max-width:1100px;line-height:1.5}
+    .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:18px}
+    .card{background:rgba(255,255,255,.92);border:1px solid var(--line);border-radius:20px;padding:16px;box-shadow:var(--shadow);backdrop-filter:blur(8px)}
+    .label{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+    .value{font-size:24px;font-weight:850;margin-top:6px}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    @media(max-width:980px){.grid2{grid-template-columns:1fr}}
+    table{width:100%;border-collapse:collapse;background:white;border-radius:16px;overflow:hidden;border:1px solid var(--line)}
+    th,td{padding:10px;border-bottom:1px solid #f8d7e7;font-size:13px;text-align:left;vertical-align:middle}
+    th{background:linear-gradient(90deg,#be185d,#db2777,#a855f7);color:white;position:sticky;top:0;z-index:1}
+    tr:last-child td{border-bottom:0}
+    select,input[type=checkbox]{cursor:pointer}
+    select{border:1px solid var(--line);border-radius:12px;padding:7px 8px;background:#fff;color:var(--ink)}
+    input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent)}
+    .small{font-size:12px;color:var(--muted)}
+    .money{font-variant-numeric:tabular-nums}
+    .pill{display:inline-block;padding:4px 9px;border-radius:999px;background:#fce7f3;color:#be185d;font-size:12px;font-weight:750}
+    .bar{height:11px;background:#fce7f3;border-radius:999px;overflow:hidden}
+    .fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2),var(--accent-3));border-radius:999px}
+    .barrow{display:grid;grid-template-columns:120px 1fr 76px;gap:10px;align-items:center;margin:10px 0}
+    .section{margin-top:18px}
+    .trackerWrap{display:flex;flex-direction:column;gap:10px}
+    .trackerCard{border:1px solid var(--line);border-radius:18px;background:#fff;overflow:hidden;box-shadow:0 4px 14px rgba(236,72,153,.06)}
+    .trackerHead{display:grid;grid-template-columns:minmax(120px,170px) 1fr auto auto;gap:12px;align-items:center;padding:12px 14px}
+    .trackerHead .meta{display:flex;gap:14px;flex-wrap:wrap}
+    .trackerBody{display:none;border-top:1px solid var(--line);padding:12px 14px;background:#fff7fb}
+    .trackerCard.open .trackerBody{display:block}
+    .trackerProgress{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
+    .termGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+    .termBox{border:1px solid var(--line);border-radius:16px;padding:10px 12px;background:#fff}
+    .termTop{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+    .termTotal{font-weight:850;margin-top:6px}
+    .checkRow{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)}
+    .done{background:var(--good-soft)}
+    .chartCard{min-height:260px}
+    .chip{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:999px;font-size:12px;font-weight:750;background:#fce7f3;color:#be185d}
+    .chip.good{background:#dcfce7;color:#166534}
+    .scrollX{overflow:auto}
+    .toggleBtn{border:1px solid var(--line);background:#fff;color:#be185d;border-radius:12px;padding:9px 12px;font-weight:800}
+    .note{background:#fff0f6;border:1px solid var(--line);border-radius:16px;padding:12px;color:var(--muted);line-height:1.5}
+  </style>
+</head>
+<body>
+  <h1>KM23 betalingsplan Avoriaz</h1>
+  <div class="sub">Roze versie met compacte betaaltracker, grafieken en progressiebalken. De losse termijn van 04-12 is weggehaald en verdeeld over de eerdere maanden. Bij 2x betalen staat de tweede betaling nu op 30-11-2026. Charlotte gaat niet mee.</div>
+
+  <div class="cards" id="cards"></div>
+
+  <div class="grid2 section">
+    <div class="card chartCard"><h2>Gespaard per persoon</h2><p class="small">Hoeveel er al binnen is per persoon.</p><div id="savedChart"></div></div>
+    <div class="card chartCard"><h2>Open bedrag per persoon</h2><p class="small">Restant inclusief gekozen locatiepot en merch.</p><div id="openChart"></div></div>
+  </div>
+
+  <div class="card section">
+    <h2>Overzicht per persoon</h2>
+    <p class="small">Kies per persoon maandelijks of 2x. Zet locatiepot aan voor €50 per maand extra. Merch is standaard €5 per maand, of bij 2x verdeeld over 30 juni en 30 november.</p>
+    <div class="scrollX"><table id="peopleTable"></table></div>
+  </div>
+
+  <div class="card section">
+    <h2>Betaaltracker</h2>
+    <p class="small">Klik per persoon op <b>Toon termijnen</b>. Vink aan zodra Eline het geld heeft ontvangen.</p>
+    <div class="trackerWrap" id="trackerWrap"></div>
+  </div>
+
+  <div class="note section"><b>Opslaan van vinkjes:</b> de vinkjes worden automatisch opgeslagen in de browser waarin je ze aanvinkt. Op een pure GitHub Pages-site worden ze niet automatisch gedeeld met andere telefoons/laptops. Daarvoor is een koppeling met bijvoorbeeld Google Sheets of Firebase nodig.</div>
+
+<script>
+const people=[
+  {nr:1,name:"Lotte",group:"",rule:"6 dagen",total:690.7891477273,paid:0},{nr:2,name:"Roeli",group:"",rule:"6 dagen",total:690.7891477273,paid:0},{nr:3,name:"Bobbie",group:"",rule:"6 dagen",total:690.7891477273,paid:0},{nr:4,name:"Eline",group:"Beheer pot",rule:"6 dagen",total:690.7891477273,paid:690.7891477273},{nr:5,name:"Noor",group:"",rule:"5 dagen + 4-daagse skipas",total:517.9727840909363,paid:0},{nr:6,name:"Tessel",group:"",rule:"6 dagen",total:690.7891477273,paid:0},{nr:7,name:"Elize",group:"",rule:"6 dagen",total:690.7891477273,paid:0},{nr:8,name:"Susanna",group:"KM23",rule:"6 dagen",total:690.7891477273,paid:0},{nr:9,name:"Catharina",group:"",rule:"6 dagen",total:690.7891477273,paid:0},{nr:10,name:"Zoë",group:"KM23",rule:"6 dagen",total:690.7891477273,paid:0},{nr:11,name:"Charlotte",group:"Niet mee",rule:"Niet mee",total:0,paid:0},{nr:12,name:"Maxime",group:"KM23",rule:"6 dagen",total:690.7891477273,paid:100},{nr:13,name:"Naniek",group:"KM23",rule:"6 dagen",total:690.7891477273,paid:200},{nr:14,name:"Felien",group:"KM23",rule:"6 dagen",total:690.7891477273,paid:100},{nr:15,name:"Joyce",group:"KM23",rule:"6 dagen",total:690.7891477273,paid:0},{nr:16,name:"Lara",group:"KM23",rule:"6 dagen",total:690.7891477273,paid:0},{nr:17,name:"Kato",group:"KM23",rule:"6 dagen",total:690.7891477273,paid:0}
+];
+const dates=["30-05-2026","30-06-2026","30-07-2026","30-08-2026","30-09-2026","30-10-2026","30-11-2026"];
+const settings={invoiceTotal:10879.81,sunwebPaid:4517.62,sunwebRemaining:6362.19,depositPaid:4517.62,localPerMonth:50,localMonths:7,merchPerMonth:5};
+const storeKey='km23-plan-v8-pink-geen-4dec';
+let state=JSON.parse(localStorage.getItem(storeKey)||'{}');
+
+function eur(x){return new Intl.NumberFormat('nl-NL',{style:'currency',currency:'EUR'}).format(Math.round((x+Number.EPSILON)*100)/100)}
+function pct(x){return `${Math.round(x)}%`}
+function save(){localStorage.setItem(storeKey,JSON.stringify(state));render();}
+function method(p){return state['method_'+p.nr]||'Maandelijks'}
+function localOn(p){return state['local_'+p.nr]||'Nee'}
+function paidFuture(p,d){return !!state['paid_'+p.nr+'_'+d]}
+function isOpen(p){return !!state['open_'+p.nr]}
+function openVacation(p){return Math.max(0,p.total-p.paid)}
+function depositDue(p){return Math.max(0, +(p.total*settings.depositPaid/settings.invoiceTotal-p.paid).toFixed(2))}
+function vacationTerm(p,d){
+  const open=openVacation(p);
+  if(p.total===0)return 0;
+  if(method(p)==='Maandelijks'){
+    let base=+(open/7).toFixed(2);
+    return d==='30-11-2026'? +(open-base*6).toFixed(2):base;
+  }
+  if(d==='30-06-2026')return depositDue(p);
+  if(d==='30-11-2026')return +(open-depositDue(p)).toFixed(2);
+  return 0;
+}
+function localTerm(p,d){return localOn(p)==='Ja'?settings.localPerMonth:0}
+function totalMerch(p){return p.total>0?settings.merchPerMonth*settings.localMonths:0}
+function merchTerm(p,d){
+  if(p.total<=0)return 0;
+  if(method(p)==='2x'){
+    return (d==='30-06-2026'||d==='30-11-2026')? +(totalMerch(p)/2).toFixed(2):0;
+  }
+  return settings.merchPerMonth;
+}
+function totalLocal(p){return localOn(p)==='Ja'?settings.localPerMonth*settings.localMonths:0}
+function paidViaTracker(p){return dates.reduce((s,d)=>s+(paidFuture(p,d)?vacationTerm(p,d)+localTerm(p,d)+merchTerm(p,d):0),0)}
+function totalOpenAfterTracker(p){return Math.max(0,openVacation(p)+totalLocal(p)+totalMerch(p)-paidViaTracker(p))}
+function totalTarget(p){return p.total+totalLocal(p)+totalMerch(p)}
+function totalSavedAllIn(p){return p.paid+paidViaTracker(p)}
+function progressPercent(p){const target=totalTarget(p);if(target<=0)return 0;return Math.min(100,(totalSavedAllIn(p)/target)*100)}
+function progressBarHTML(percent){return `<div class="bar"><div class="fill" style="width:${Math.max(0,Math.min(100,percent))}%"></div></div>`;}
+
+function renderCards(){
+  const active=people.filter(p=>p.total>0);
+  let saved=active.reduce((s,p)=>s+p.paid,0);
+  let open=active.reduce((s,p)=>s+openVacation(p),0);
+  let loc=active.reduce((s,p)=>s+totalLocal(p),0);
+  let merch=active.reduce((s,p)=>s+totalMerch(p),0);
+  let checked=active.reduce((s,p)=>s+paidViaTracker(p),0);
+  document.getElementById('cards').innerHTML=`<div class="card"><div class="label">Factuur totaal</div><div class="value">${eur(settings.invoiceTotal)}</div></div><div class="card"><div class="label">Al gespaard</div><div class="value">${eur(saved)}</div></div><div class="card"><div class="label">Open vakantie</div><div class="value">${eur(open)}</div></div><div class="card"><div class="label">Gekozen locatiepot</div><div class="value">${eur(loc)}</div></div><div class="card"><div class="label">Merchpot totaal</div><div class="value">${eur(merch)}</div></div><div class="card"><div class="label">Afgevinkt ontvangen</div><div class="value">${eur(checked)}</div></div>`
+}
+
+function renderPeople(){
+  let rows=`<tr><th>Naam</th><th>Groep</th><th>Totaal</th><th>Al gespaard</th><th>Betaalwijze</th><th>Locatiepot</th><th>Progressie</th><th>Open</th></tr>`;
+  people.forEach(p=>{
+    const percent=progressPercent(p);
+    rows+=`<tr><td><b>${p.name}</b><div class="small">${p.rule}</div></td><td>${p.group?`<span class="pill">${p.group}</span>`:''}</td><td class="money">${eur(totalTarget(p))}</td><td class="money">${eur(totalSavedAllIn(p))}</td><td>${p.total>0?`<select onchange="state['method_${p.nr}']=this.value;save()"><option ${method(p)==='Maandelijks'?'selected':''}>Maandelijks</option><option ${method(p)==='2x'?'selected':''}>2x</option></select>`:'-'}</td><td>${p.total>0?`<select onchange="state['local_${p.nr}']=this.value;save()"><option ${localOn(p)==='Nee'?'selected':''}>Nee</option><option ${localOn(p)==='Ja'?'selected':''}>Ja</option></select>`:'-'}</td><td style="min-width:150px">${progressBarHTML(percent)}<div class="small" style="margin-top:6px">${pct(percent)}</div></td><td class="money"><b>${eur(totalOpenAfterTracker(p))}</b></td></tr>`
+  });
+  document.getElementById('peopleTable').innerHTML=rows;
+}
+
+function renderOpenChart(){
+  const active=people.filter(p=>p.total>0);
+  const max=Math.max(...active.map(totalOpenAfterTracker),1);
+  document.getElementById('openChart').innerHTML=active.map(p=>`<div class="barrow"><div class="small">${p.name}</div><div class="bar"><div class="fill" style="width:${(totalOpenAfterTracker(p)/max)*100}%"></div></div><div class="money small">${eur(totalOpenAfterTracker(p))}</div></div>`).join('')
+}
+function renderSavedChart(){
+  const active=people.filter(p=>p.total>0);
+  const max=Math.max(...active.map(totalSavedAllIn),1);
+  document.getElementById('savedChart').innerHTML=active.map(p=>`<div class="barrow"><div class="small">${p.name}</div><div class="bar" style="background:#fce7f3"><div class="fill" style="width:${(totalSavedAllIn(p)/max)*100}%"></div></div><div class="money small">${eur(totalSavedAllIn(p))}</div></div>`).join('')
+}
+function renderTracker(){
+  const active=people.filter(p=>p.total>0);
+  document.getElementById('trackerWrap').innerHTML=active.map(p=>{
+    const percent=progressPercent(p);
+    const remaining=totalOpenAfterTracker(p);
+    const bodyTerms=dates.map(d=>{
+      const v=vacationTerm(p,d),l=localTerm(p,d),m=merchTerm(p,d),t=v+l+m;
+      if(t===0)return '';
+      const checked=paidFuture(p,d);
+      return `<div class="termBox ${checked?'done':''}"><div class="termTop"><div><div><b>${d}</b></div><div class="small">Vakantie ${eur(v)}</div><div class="small">Locatie ${eur(l)}</div><div class="small">Merch ${eur(m)}</div></div><div class="termTotal money">${eur(t)}</div></div><div class="checkRow"><span class="small">Ontvangen</span><input type="checkbox" ${checked?'checked':''} onchange="state['paid_${p.nr}_${d}']=this.checked;save()"></div></div>`
+    }).join('');
+    return `<div class="trackerCard ${isOpen(p)?'open':''}"><div class="trackerHead"><div><h3>${p.name}</h3><div class="small">${p.rule}</div></div><div class="trackerProgress"><div>${progressBarHTML(percent)}<div class="small" style="margin-top:6px">${pct(percent)} gespaard</div></div><div class="chip ${remaining===0?'good':''}">${eur(remaining)} open</div></div><div class="meta small"><span>Gespaard <b class="money">${eur(totalSavedAllIn(p))}</b></span><span>Totaal <b class="money">${eur(totalTarget(p))}</b></span></div><button class="toggleBtn" onclick="togglePerson(${p.nr})">${isOpen(p)?'Verberg termijnen':'Toon termijnen'}</button></div><div class="trackerBody"><div class="termGrid">${bodyTerms}</div></div></div>`
+  }).join('')
+}
+function togglePerson(nr){state['open_'+nr]=!state['open_'+nr];save();}
+function render(){renderCards();renderPeople();renderSavedChart();renderOpenChart();renderTracker();}
+render();
+</script>
+</body>
+</html>
