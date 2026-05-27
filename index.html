@@ -185,7 +185,7 @@ function renderCards(){
 }
 
 function renderPeople(){
-  let rows=`<tr><th>Naam</th><th>Groep</th><th>Totaal</th><th>Al gespaard</th><th>Betaalwijze</th><th>extra-spaarpot</th><th>Progressie</th><th>Open</th></tr>`;
+  let rows=`<tr><th>Naam</th><th>Groep</th><th>Totaal</th><th>Al gespaard</th><th>Betaalwijze</th><th>Extra-spaarpot</th><th>Progressie</th><th>Open</th></tr>`;
   people.forEach(p=>{
     const percent=progressPercent(p);
     rows+=`<tr><td><b>${p.name}</b><div class="small">${p.rule}</div></td><td>${p.group?`<span class="pill">${p.group}</span>`:''}</td><td class="money">${eur(totalTarget(p))}</td><td class="money">${eur(totalSavedAllIn(p))}</td><td>${p.total>0?`<select onchange="updateState('method_${p.nr}', this.value)"><option ${method(p)==='Maandelijks'?'selected':''}>Maandelijks</option><option ${method(p)==='2x'?'selected':''}>2x</option></select>`:'-'}</td><td>${p.total>0?`<select onchange="updateState('local_${p.nr}', this.value)"><option ${localOn(p)==='Nee'?'selected':''}>Nee</option><option ${localOn(p)==='Ja'?'selected':''}>Ja</option></select>`:'-'}</td><td style="min-width:150px">${progressBarHTML(percent)}<div class="small" style="margin-top:6px">${pct(percent)}</div></td><td class="money"><b>${eur(totalOpenAfterTracker(p))}</b></td></tr>`
@@ -213,7 +213,7 @@ function renderTracker(){
       if(t===0)return '';
       const key='paid_'+p.nr+'_'+d;
       const checked=paidFuture(p,d);
-      return `<div class="termBox ${checked?'done':''}"><div class="termTop"><div><div><b>${d}</b></div><div class="small">Vakantie ${eur(v)}</div><div class="small">Locatie ${eur(l)}</div><div class="small">Merch ${eur(m)}</div></div><div class="termTotal money">${eur(t)}</div></div><div class="checkRow"><span class="small">Ontvangen</span><input type="checkbox" ${checked?'checked':''} onchange="updateState('${key}', this.checked)"></div></div>`
+      return `<div class="termBox ${checked?'done':''}"><div class="termTop"><div><div><b>${d}</b></div><div class="small">Vakantie ${eur(v)}</div><div class="small">Extra spaar ${eur(l)}</div><div class="small">Merch ${eur(m)}</div></div><div class="termTotal money">${eur(t)}</div></div><div class="checkRow"><span class="small">Ontvangen</span><input type="checkbox" ${checked?'checked':''} onchange="updateState('${key}', this.checked)"></div></div>`
     }).join('');
     return `<div class="trackerCard ${isOpen(p)?'open':''}"><div class="trackerHead"><div><h3>${p.name}</h3><div class="small">${p.rule}</div></div><div class="trackerProgress"><div>${progressBarHTML(percent)}<div class="small" style="margin-top:6px">${pct(percent)} gespaard</div></div><div class="chip ${remaining===0?'good':''}">${eur(remaining)} open</div></div><div class="meta small"><span>Gespaard <b class="money">${eur(totalSavedAllIn(p))}</b></span><span>Totaal <b class="money">${eur(totalTarget(p))}</b></span></div><button class="toggleBtn" onclick="togglePerson(${p.nr})">${isOpen(p)?'Verberg termijnen':'Toon termijnen'}</button></div><div class="trackerBody"><div class="termGrid">${bodyTerms}</div></div></div>`
   }).join('')
