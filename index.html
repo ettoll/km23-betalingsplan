@@ -61,19 +61,18 @@
 </head>
 <body>
   <h1>KM23 betalingsplan Avoriaz</h1>
-  <div class="sub">Roze versie met compacte betaaltracker, grafieken en progressiebalken. Betaalvinkjes, betaalwijze en locatiepot-keuzes worden opgeslagen in Google Sheets.</div>
   <div id="syncStatus" class="status">Google Sheets laden...</div>
 
   <div class="cards" id="cards"></div>
 
   <div class="grid2 section">
     <div class="card chartCard"><h2>Gespaard per persoon</h2><p class="small">Hoeveel er al binnen is per persoon.</p><div id="savedChart"></div></div>
-    <div class="card chartCard"><h2>Open bedrag per persoon</h2><p class="small">Restant inclusief gekozen locatiepot en merch.</p><div id="openChart"></div></div>
+    <div class="card chartCard"><h2>Open bedrag per persoon</h2><p class="small">Restant inclusief gekozen extra-spaarpot en merch.</p><div id="openChart"></div></div>
   </div>
 
   <div class="card section">
     <h2>Overzicht per persoon</h2>
-    <p class="small">Kies per persoon maandelijks of 2x. Zet locatiepot aan voor €50 per maand extra. Beide keuzes worden nu gedeeld opgeslagen.</p>
+    <p class="small">Kies per persoon maandelijks of 2x. Zet extra-spaarpot aan voor €50 per maand extra. Beide keuzes worden nu gedeeld opgeslagen.</p>
     <div class="scrollX"><table id="peopleTable"></table></div>
   </div>
 
@@ -182,11 +181,11 @@ function renderCards(){
   let loc=active.reduce((s,p)=>s+totalLocal(p),0);
   let merch=active.reduce((s,p)=>s+totalMerch(p),0);
   let checked=active.reduce((s,p)=>s+paidViaTracker(p),0);
-  document.getElementById('cards').innerHTML=`<div class="card"><div class="label">Factuur totaal</div><div class="value">${eur(settings.invoiceTotal)}</div></div><div class="card"><div class="label">Al gespaard</div><div class="value">${eur(saved)}</div></div><div class="card"><div class="label">Open vakantie</div><div class="value">${eur(open)}</div></div><div class="card"><div class="label">Gekozen locatiepot</div><div class="value">${eur(loc)}</div></div><div class="card"><div class="label">Merchpot totaal</div><div class="value">${eur(merch)}</div></div><div class="card"><div class="label">Afgevinkt ontvangen</div><div class="value">${eur(checked)}</div></div>`
+  document.getElementById('cards').innerHTML=`<div class="card"><div class="label">Factuur totaal</div><div class="value">${eur(settings.invoiceTotal)}</div></div><div class="card"><div class="label">Al gespaard</div><div class="value">${eur(saved)}</div></div><div class="card"><div class="label">Open vakantie</div><div class="value">${eur(open)}</div></div><div class="card"><div class="label">Gekozen extra-spaarpot</div><div class="value">${eur(loc)}</div></div><div class="card"><div class="label">Merchpot totaal</div><div class="value">${eur(merch)}</div></div><div class="card"><div class="label">Afgevinkt ontvangen</div><div class="value">${eur(checked)}</div></div>`
 }
 
 function renderPeople(){
-  let rows=`<tr><th>Naam</th><th>Groep</th><th>Totaal</th><th>Al gespaard</th><th>Betaalwijze</th><th>Locatiepot</th><th>Progressie</th><th>Open</th></tr>`;
+  let rows=`<tr><th>Naam</th><th>Groep</th><th>Totaal</th><th>Al gespaard</th><th>Betaalwijze</th><th>extra-spaarpot</th><th>Progressie</th><th>Open</th></tr>`;
   people.forEach(p=>{
     const percent=progressPercent(p);
     rows+=`<tr><td><b>${p.name}</b><div class="small">${p.rule}</div></td><td>${p.group?`<span class="pill">${p.group}</span>`:''}</td><td class="money">${eur(totalTarget(p))}</td><td class="money">${eur(totalSavedAllIn(p))}</td><td>${p.total>0?`<select onchange="updateState('method_${p.nr}', this.value)"><option ${method(p)==='Maandelijks'?'selected':''}>Maandelijks</option><option ${method(p)==='2x'?'selected':''}>2x</option></select>`:'-'}</td><td>${p.total>0?`<select onchange="updateState('local_${p.nr}', this.value)"><option ${localOn(p)==='Nee'?'selected':''}>Nee</option><option ${localOn(p)==='Ja'?'selected':''}>Ja</option></select>`:'-'}</td><td style="min-width:150px">${progressBarHTML(percent)}<div class="small" style="margin-top:6px">${pct(percent)}</div></td><td class="money"><b>${eur(totalOpenAfterTracker(p))}</b></td></tr>`
